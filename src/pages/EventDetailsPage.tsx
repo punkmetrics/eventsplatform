@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 
 const EventDetailsPage: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Mock event data
   const event = {
@@ -139,94 +138,10 @@ const EventDetailsPage: React.FC = () => {
             <p className="text-primary font-bold text-2xl">{event.price}</p>
             <p className="text-muted-foreground text-xs">{event.priceDescription}</p>
           </div>
-          <Button
-            onClick={() => setIsCheckoutOpen(true)}
-            className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-6 text-lg"
-          >
+          <Button className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-6 text-lg">
             BUY NOW
           </Button>
         </div>
-
-        {/* Checkout Bottom Sheet */}
-        {isCheckoutOpen && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 bg-black/50 z-40 max-w-md mx-auto"
-              onClick={() => setIsCheckoutOpen(false)}
-            />
-
-            {/* Bottom Sheet */}
-            <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card rounded-t-3xl z-50 border-t border-border max-h-[80vh] overflow-y-auto">
-              {/* Handle Bar */}
-              <div className="flex justify-center pt-3 pb-2">
-                <div className="w-12 h-1 bg-border rounded-full" />
-              </div>
-
-              {/* Content */}
-              <div className="px-4 pb-6">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Order Summary</h2>
-
-                {/* Event Details */}
-                <div className="mb-6 pb-6 border-b border-border">
-                  <div className="flex gap-4 mb-4">
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      className="w-20 h-24 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-bold text-foreground mb-1">{event.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{event.artist}</p>
-                      <p className="text-xs text-primary font-semibold">
-                        {event.date}, {event.time}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Price Breakdown */}
-                <div className="mb-6 space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Ticket Price</span>
-                    <span className="text-foreground font-semibold">{event.price}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Fees</span>
-                    <span className="text-foreground font-semibold">€2.50</span>
-                  </div>
-                  <div className="flex justify-between text-sm border-t border-border pt-3">
-                    <span className="font-bold text-foreground">Total</span>
-                    <span className="font-bold text-primary text-lg">€33.50</span>
-                  </div>
-                </div>
-
-                {/* Promo Code */}
-                <div className="mb-6">
-                  <input
-                    type="text"
-                    placeholder="Enter promo code"
-                    className="w-full bg-secondary text-foreground px-4 py-3 rounded-full text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                {/* CTA Button */}
-                <Button className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-4 text-base mb-3">
-                  Continue to Payment
-                </Button>
-
-                {/* Close Button */}
-                <Button
-                  variant="secondary"
-                  className="w-full rounded-full py-3"
-                  onClick={() => setIsCheckoutOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

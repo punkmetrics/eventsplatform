@@ -123,7 +123,7 @@ function EventHeroCard({ event }: { event: typeof HERO_EVENT }) {
   return (
     <div className="w-full space-y-4">
       {/* Image */}
-      <div className="relative w-full aspect-[4/5] rounded-[24px] overflow-hidden bg-card">
+      <div className="relative w-full h-[400px] rounded-[24px] overflow-hidden bg-card">
         <img
           src={event.image}
           alt={event.title}

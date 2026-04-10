@@ -18,7 +18,6 @@ const EventDetailsPage: React.FC = () => {
     category: 'DJ',
     price: '€31',
     image: 'https://picsum.photos/seed/novah2026/800/1000',
-    badge: '29.05',
     description:
       'NITSA: Novah - Experience an unforgettable night with cutting-edge sound and immersive visuals.',
     ageRestriction: 'This is an 18+ event',
@@ -66,16 +65,6 @@ const EventDetailsPage: React.FC = () => {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-
-            {/* Badge - Top Right */}
-            <div className="absolute top-4 right-4 bg-primary text-background px-3 py-1 rounded-full text-sm font-bold">
-              {event.badge}
-            </div>
-
-            {/* Category Label - Top */}
-            <div className="absolute top-0 left-0 right-0 bg-primary/80 text-background px-4 py-2 text-xs font-bold tracking-widest truncate">
-              {event.category.toUpperCase()} {event.category.toUpperCase()} {event.category.toUpperCase()}
-            </div>
 
             {/* Action Buttons - Bottom Right */}
             <div className="absolute bottom-4 right-4 flex gap-3">

@@ -228,16 +228,6 @@ export default function EventsPage() {
           </div>
         </header>
 
-        {/* Search */}
-        <div className="pt-2 pb-4">
-          <SearchInput
-            icon={<Search className="w-5 h-5" />}
-            placeholder="Search events, artists or venues"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
         {/* Filter Pills */}
         <div className="flex flex-wrap gap-2 pb-4">
           {FILTERS.map((filter) => (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Search, Menu, Share2, MapPin, Calendar, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import CheckoutBottomSheet from '@/components/CheckoutBottomSheet';
+import PaymentBottomSheet from '@/components/PaymentBottomSheet';
 import { cn } from '@/lib/utils';
 
 const EventDetailsPage: React.FC = () => {
@@ -149,10 +149,9 @@ const EventDetailsPage: React.FC = () => {
         </div>
 
         {/* Checkout Bottom Sheet */}
-        <CheckoutBottomSheet
+        <PaymentBottomSheet
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}
-          eventTitle={event.title}
           price={event.price}
         />
       </div>

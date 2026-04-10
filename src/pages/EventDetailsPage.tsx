@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Heart, Search, Menu, Share2, MapPin, Calendar, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import CheckoutBottomSheet from '@/components/CheckoutBottomSheet';
 import { cn } from '@/lib/utils';
 
 const EventDetailsPage: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Mock event data
   const event = {
@@ -138,10 +140,21 @@ const EventDetailsPage: React.FC = () => {
             <p className="text-primary font-bold text-2xl">{event.price}</p>
             <p className="text-muted-foreground text-xs">{event.priceDescription}</p>
           </div>
-          <Button className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-6 text-lg">
+          <Button
+            onClick={() => setIsCheckoutOpen(true)}
+            className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-6 text-lg"
+          >
             BUY NOW
           </Button>
         </div>
+
+        {/* Checkout Bottom Sheet */}
+        <CheckoutBottomSheet
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          eventTitle={event.title}
+          price={event.price}
+        />
       </div>
     </div>
   );

@@ -84,11 +84,18 @@ export default function App() {
       <header className="space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tight">DICE Design System</h1>
-          <Link to="/login">
-            <Button variant="outline" className="rounded-full font-bold">
-              View Login Page
-            </Button>
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/login">
+              <Button variant="outline" className="rounded-full font-bold">
+                View Login Page
+              </Button>
+            </Link>
+            <Link to="/events">
+              <Button variant="default" className="rounded-full font-bold">
+                View Events Page
+              </Button>
+            </Link>
+          </div>
         </div>
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl">
           Extracted visual patterns, tokens, and components inspired by the DICE mobile app interface. Built with Tailwind CSS and shadcn/ui.

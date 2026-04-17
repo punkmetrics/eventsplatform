@@ -28,14 +28,21 @@ export async function fetchEvents(limit: number = 7): Promise<Event[]> {
     throw new Error('Invalid API response');
   }
 
-  const mappedEvents: Event[] = rawEvents.slice(0, limit).map((item: any, index: number) => ({
-    id: `event_${index}`,
-    title: item.title || 'Event Title',
-    date: formatDate(item.date),
-    venue: item.location || item.address || 'Unknown Venue',
-    price: item.ticket_text || 'Free',
-    image: item.thumbnail || `https://picsum.photos/seed/event${index}/160/160`,
-  }));
+  const mappedEvents: Event[] = rawEvents.slice(0, limit).map((item: any, index: number) => {
+    const rawThumbnail = item.thumbnail;
+    const image = rawThumbnail
+      ? `https://images.weserv.nl/?url=${encodeURIComponent(rawThumbnail)}&w=160&h=160&fit=cover`
+      : `https://picsum.photos/seed/event${index}/160/160`;
+
+    return {
+      id: `event_${index}`,
+      title: item.title || 'Event Title',
+      date: formatDate(item.date),
+      venue: item.location || item.address || 'Unknown Venue',
+      price: item.ticket_text || 'Free',
+      image,
+    };
+  });
 
   return mappedEvents;
 }

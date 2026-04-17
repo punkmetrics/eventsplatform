@@ -5,7 +5,7 @@ import {defineConfig, loadEnv} from 'vite';
 
 // Vite plugin that registers Express-style API routes inside the Vite dev server,
 // so no separate process is needed.
-function apiPlugin(env: Record<string, string>) {
+function apiPlugin() {
   return {
     name: 'api-plugin',
     configureServer(server: any) {
@@ -20,12 +20,16 @@ function apiPlugin(env: Record<string, string>) {
         req.on('data', (chunk: Buffer) => chunks.push(chunk));
         req.on('end', async () => {
           try {
+            // Read directly from process.env — always populated in the Vite Node process
+            const secretKey = process.env.STRIPE_SECRET_KEY;
+            if (!secretKey) throw new Error('STRIPE_SECRET_KEY is not set in environment');
+
             const body = JSON.parse(Buffer.concat(chunks).toString());
             const { eventName, eventVenue, priceInCents } = body;
             const amount = priceInCents && priceInCents > 0 ? priceInCents : 100;
 
             const Stripe = (await import('stripe')).default;
-            const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+            const stripe = new Stripe(secretKey);
 
             const paymentIntent = await stripe.paymentIntents.create({
               amount,
@@ -37,7 +41,6 @@ function apiPlugin(env: Record<string, string>) {
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ clientSecret: paymentIntent.client_secret }));
           } catch (err: any) {
-            console.error('[v0] Stripe error:', err.message);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: err.message }));
@@ -51,7 +54,7 @@ function apiPlugin(env: Record<string, string>) {
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss(), apiPlugin(env)],
+    plugins: [react(), tailwindcss(), apiPlugin()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.STRIPE_PUBLISHABLE_KEY': JSON.stringify(env.STRIPE_PUBLISHABLE_KEY),

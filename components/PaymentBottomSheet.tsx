@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import StripeCheckoutSheet from '@/components/StripeCheckoutSheet';
 
 interface PaymentBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   price: string;
+  eventName?: string;
+  eventVenue?: string;
 }
 
-const PaymentBottomSheet: React.FC<PaymentBottomSheetProps> = ({ isOpen, onClose, price }) => {
+const PaymentBottomSheet: React.FC<PaymentBottomSheetProps> = ({
+  isOpen,
+  onClose,
+  price,
+  eventName = 'Event Ticket',
+  eventVenue = 'Barcelona',
+}) => {
+  const [isStripeOpen, setIsStripeOpen] = useState(false);
+
   if (!isOpen) return null;
 
   return (
@@ -60,10 +71,7 @@ const PaymentBottomSheet: React.FC<PaymentBottomSheetProps> = ({ isOpen, onClose
 
           {/* Purchase Button */}
           <Button
-            onClick={() => {
-              console.log('Purchase clicked');
-              onClose();
-            }}
+            onClick={() => setIsStripeOpen(true)}
             className="w-full text-lg py-6 rounded-full font-bold bg-primary text-primary-foreground hover:bg-primary/90"
           >
             PURCHASE
@@ -77,6 +85,15 @@ const PaymentBottomSheet: React.FC<PaymentBottomSheetProps> = ({ isOpen, onClose
           </p>
         </div>
       </div>
+
+      {/* Stripe Embedded Checkout */}
+      <StripeCheckoutSheet
+        isOpen={isStripeOpen}
+        onClose={() => setIsStripeOpen(false)}
+        eventName={eventName}
+        eventVenue={eventVenue}
+        price={price}
+      />
     </>
   );
 };

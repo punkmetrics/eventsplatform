@@ -206,6 +206,8 @@ const EventDetailsPage: React.FC = () => {
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}
           price={displayEvent.price}
+          eventName={displayEvent.title}
+          eventVenue={displayEvent.venue}
         />
       </div>
     </div>

@@ -23,23 +23,30 @@ export async function fetchEvents(limit: number = 7): Promise<Event[]> {
 
   const data = await response.json();
 
-  if (!data.events_results || !Array.isArray(data.events_results)) {
+  const rawEvents = data.events || data.events_results;
+  if (!rawEvents || !Array.isArray(rawEvents)) {
     throw new Error('Invalid API response');
   }
 
-  const mappedEvents: Event[] = data.events_results.slice(0, limit).map((item: any, index: number) => ({
+  const mappedEvents: Event[] = rawEvents.slice(0, limit).map((item: any, index: number) => ({
     id: `event_${index}`,
     title: item.title || 'Event Title',
     date: formatDate(item.date),
-    venue: item.address || 'Unknown Venue',
-    price: item.ticket_text || 'TBA',
-    image: item.image || `https://picsum.photos/seed/event${index}/160/160`,
+    venue: item.location || item.address || 'Unknown Venue',
+    price: item.ticket_text || 'Free',
+    image: item.thumbnail || `https://picsum.photos/seed/event${index}/160/160`,
   }));
 
   return mappedEvents;
 }
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return 'Date TBA';
-  return dateStr;
+function formatDate(date: any): string {
+  if (!date) return 'Date TBA';
+  // API returns date as object { day: "17", month: "Apr" }
+  if (typeof date === 'object' && date.day && date.month) {
+    return `${date.month} ${date.day}`;
+  }
+  // Fallback for string format
+  if (typeof date === 'string') return date;
+  return 'Date TBA';
 }

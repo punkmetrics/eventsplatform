@@ -1,27 +1,76 @@
-import React, { useState } from 'react';
-import { Heart, Search, Menu, Share2, MapPin, Calendar, Music } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Heart, Search, Menu, Share2, MapPin, Calendar, Music, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PaymentBottomSheet from '@/components/PaymentBottomSheet';
 import { cn } from '@/lib/utils';
+import { fetchEvents, type Event } from '@/services/eventsService';
+
+const HERO_FALLBACK = {
+  title: 'Palosanto On The Roof: Oktave, Temil & Guests',
+  date: 'Sat, Apr 19',
+  venue: 'Rooftop at Arlo Williamsburg',
+  price: '$22',
+  image: 'https://picsum.photos/seed/rooftop2026/800/1000',
+  location: 'Barcelona',
+  category: 'Music',
+  description: 'An unforgettable night on the rooftop with live music and special guests.',
+};
 
 const EventDetailsPage: React.FC = () => {
+  const { index } = useParams<{ index: string }>();
+  const navigate = useNavigate();
   const [isFavorited, setIsFavorited] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock event data
-  const event = {
-    id: '2',
-    title: 'Novah',
-    artist: 'NITSA en Apollo',
-    date: 'Fri, May 29',
-    time: '11:59 PM',
-    venue: 'Apollo',
+  useEffect(() => {
+    const loadEvent = async () => {
+      try {
+        setIsLoading(true);
+
+        // Hero card uses static data
+        if (index === 'hero') {
+          setEvent({
+            id: 'hero',
+            ...HERO_FALLBACK,
+          });
+          return;
+        }
+
+        const idx = parseInt(index ?? '0', 10);
+        const events = await fetchEvents(7);
+        const found = events[idx] ?? events[0];
+        setEvent(found);
+      } catch {
+        setEvent({ id: 'fallback', ...HERO_FALLBACK });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [index]);
+
+  if (isLoading || !event) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  const displayEvent = {
+    title: event.title,
+    venue: event.venue,
+    date: event.date,
+    price: event.price,
+    image: event.image,
     location: 'Barcelona',
-    category: 'DJ',
-    price: '€31',
-    image: 'https://picsum.photos/seed/novah2026/800/1000',
-    description:
-      'NITSA: Novah - Experience an unforgettable night with cutting-edge sound and immersive visuals.',
+    category: 'Music',
+    time: '',
+    description: `${event.title} — ${event.venue}. An unmissable experience in Barcelona.`,
     ageRestriction: 'This is an 18+ event',
     priceDescription: "The price you'll pay. No surprises later.",
   };
@@ -48,6 +97,9 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
+            <Button variant="secondary" size="icon" className="rounded-full" onClick={() => navigate(-1)} aria-label="Go back">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <Button variant="secondary" size="icon" className="rounded-full">
               <Search className="w-5 h-5" />
             </Button>
@@ -63,9 +115,10 @@ const EventDetailsPage: React.FC = () => {
           <div className="relative w-full h-[400px] rounded-[24px] overflow-hidden bg-card mb-6">
             {/* Background Image */}
             <img
-              src={event.image}
-              alt={event.title}
+              src={displayEvent.image}
+              alt={displayEvent.title}
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
             />
 
             {/* Action Buttons - Bottom Right */}
@@ -92,14 +145,14 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Event Info Section */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground mb-2">{event.title}</h1>
-            <p className="text-muted-foreground mb-4">{event.artist}</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{displayEvent.title}</h1>
+            <p className="text-muted-foreground mb-4">{displayEvent.venue}</p>
 
             {/* Date/Time */}
             <div className="flex items-center gap-2 mb-3">
               <Calendar className="w-4 h-4 text-primary" />
               <span className="text-primary font-semibold">
-                {event.date}, {event.time}
+                {displayEvent.date}{displayEvent.time ? `, ${displayEvent.time}` : ''}
               </span>
             </div>
 
@@ -107,11 +160,11 @@ const EventDetailsPage: React.FC = () => {
             <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <div className="flex items-center gap-1">
                 <Music className="w-4 h-4" />
-                <span>{event.category}</span>
+                <span>{displayEvent.category}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
-                <span>{event.location}</span>
+                <span>{displayEvent.location}</span>
               </div>
             </div>
           </div>
@@ -125,11 +178,11 @@ const EventDetailsPage: React.FC = () => {
           <div className="mb-6">
             <h2 className="text-lg font-bold text-foreground mb-3">About</h2>
             <p className="text-muted-foreground text-sm leading-relaxed mb-3">
-              {event.description}
+              {displayEvent.description}
             </p>
             <div className="flex items-center gap-2 text-muted-foreground text-xs">
               <Music className="w-3 h-3" />
-              <span>{event.ageRestriction}</span>
+              <span>{displayEvent.ageRestriction}</span>
             </div>
           </div>
         </div>
@@ -137,8 +190,8 @@ const EventDetailsPage: React.FC = () => {
         {/* Fixed Bottom Sheet - Price & CTA */}
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gradient-to-t from-background via-background to-background/80 border-t border-border px-4 py-4">
           <div className="mb-3">
-            <p className="text-primary font-bold text-2xl">{event.price}</p>
-            <p className="text-muted-foreground text-xs">{event.priceDescription}</p>
+            <p className="text-primary font-bold text-2xl">{displayEvent.price}</p>
+            <p className="text-muted-foreground text-xs">{displayEvent.priceDescription}</p>
           </div>
           <Button
             onClick={() => setIsCheckoutOpen(true)}
@@ -152,7 +205,7 @@ const EventDetailsPage: React.FC = () => {
         <PaymentBottomSheet
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}
-          price={event.price}
+          price={displayEvent.price}
         />
       </div>
     </div>

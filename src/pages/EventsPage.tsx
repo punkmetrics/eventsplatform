@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, Search, MapPin, Menu, Music, Disc, Users, Laugh, Mic, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/SearchInput';
@@ -77,15 +78,20 @@ const EVENTS = [
 
 function EventListItem({
   event,
+  onNavigate,
 }: {
   event: (typeof EVENTS)[0];
+  onNavigate: () => void;
 }) {
   const [favorited, setFavorited] = useState(false);
 
   return (
     <div className="flex gap-4 items-start py-4 border-b border-border last:border-none">
       {/* Thumbnail */}
-      <div className="w-[72px] h-[72px] shrink-0 rounded-lg overflow-hidden bg-muted">
+      <div
+        className="w-[72px] h-[72px] shrink-0 rounded-lg overflow-hidden bg-muted cursor-pointer"
+        onClick={onNavigate}
+      >
         <img
           src={event.image}
           alt={event.title}
@@ -95,7 +101,7 @@ function EventListItem({
       </div>
 
       {/* Details */}
-      <div className="flex-1 min-w-0 space-y-0.5">
+      <div className="flex-1 min-w-0 space-y-0.5 cursor-pointer" onClick={onNavigate}>
         <h3 className="text-sm font-bold leading-snug line-clamp-2 text-foreground">
           {event.title}
         </h3>
@@ -118,13 +124,13 @@ function EventListItem({
   );
 }
 
-function EventHeroCard({ event }: { event: typeof HERO_EVENT }) {
+function EventHeroCard({ event, onNavigate }: { event: typeof HERO_EVENT; onNavigate: () => void }) {
   const [favorited, setFavorited] = useState(false);
 
   return (
     <div className="w-full space-y-4">
       {/* Image */}
-      <div className="relative w-full h-[400px] rounded-[24px] overflow-hidden bg-card">
+      <div className="relative w-full h-[400px] rounded-[24px] overflow-hidden bg-card cursor-pointer" onClick={onNavigate}>
         <img
           src={event.image}
           alt={event.title}
@@ -182,6 +188,7 @@ function EventHeroCard({ event }: { event: typeof HERO_EVENT }) {
 // --- Page ---
 
 export default function EventsPage() {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -291,7 +298,7 @@ export default function EventsPage() {
 
         {/* Hero Event Banner */}
         <section aria-label="Featured event">
-          <EventHeroCard event={HERO_EVENT} />
+          <EventHeroCard event={HERO_EVENT} onNavigate={() => navigate('/details/hero')} />
         </section>
 
         {/* Events List */}
@@ -302,8 +309,12 @@ export default function EventsPage() {
           </h2>
 
           <div className="mt-4">
-            {EVENTS.map((event) => (
-              <EventListItem key={event.id} event={event} />
+            {events.map((event, index) => (
+              <EventListItem
+                key={event.id}
+                event={event}
+                onNavigate={() => navigate(`/details/${index}`)}
+              />
             ))}
           </div>
         </section>

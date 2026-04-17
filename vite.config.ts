@@ -9,7 +9,7 @@ function apiPlugin(env: Record<string, string>) {
   return {
     name: 'api-plugin',
     configureServer(server: any) {
-      server.middlewares.use('/api/stripe/create-checkout-session', async (req: any, res: any) => {
+      server.middlewares.use('/api/stripe/payment-intent', async (req: any, res: any) => {
         if (req.method !== 'POST') {
           res.statusCode = 405;
           res.end('Method Not Allowed');
@@ -24,32 +24,20 @@ function apiPlugin(env: Record<string, string>) {
             const { eventName, eventVenue, priceInCents } = body;
             const amount = priceInCents && priceInCents > 0 ? priceInCents : 100;
 
-            // Dynamically import Stripe to avoid bundling issues
             const Stripe = (await import('stripe')).default;
             const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
-            const session = await stripe.checkout.sessions.create({
-              ui_mode: 'embedded',
-              redirect_on_completion: 'never',
-              line_items: [
-                {
-                  price_data: {
-                    currency: 'usd',
-                    product_data: {
-                      name: eventName || 'Event Ticket',
-                      description: eventVenue ? `@ ${eventVenue}` : 'Barcelona',
-                    },
-                    unit_amount: amount,
-                  },
-                  quantity: 1,
-                },
-              ],
-              mode: 'payment',
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount,
+              currency: 'usd',
+              automatic_payment_methods: { enabled: true },
+              description: `${eventName || 'Event Ticket'} @ ${eventVenue || 'Barcelona'}`,
             });
 
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ clientSecret: session.client_secret }));
+            res.end(JSON.stringify({ clientSecret: paymentIntent.client_secret }));
           } catch (err: any) {
+            console.error('[v0] Stripe error:', err.message);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ error: err.message }));

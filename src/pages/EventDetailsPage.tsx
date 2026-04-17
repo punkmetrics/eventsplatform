@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, Search, Menu, Share2, MapPin, Calendar, Music, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PaymentBottomSheet from '@/components/PaymentBottomSheet';
 import { cn } from '@/lib/utils';
 import { fetchEvents, type Event } from '@/services/eventsService';
 
@@ -21,7 +20,6 @@ const EventDetailsPage: React.FC = () => {
   const { index } = useParams<{ index: string }>();
   const navigate = useNavigate();
   const [isFavorited, setIsFavorited] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -194,21 +192,19 @@ const EventDetailsPage: React.FC = () => {
             <p className="text-muted-foreground text-xs">{displayEvent.priceDescription}</p>
           </div>
           <Button
-            onClick={() => setIsCheckoutOpen(true)}
+            onClick={() => {
+              const params = new URLSearchParams({
+                name: displayEvent.title,
+                venue: displayEvent.venue,
+                price: displayEvent.price,
+              });
+              navigate(`/payment?${params.toString()}`);
+            }}
             className="w-full bg-primary hover:bg-primary/90 text-background font-bold rounded-full py-6 text-lg"
           >
             BUY NOW
           </Button>
         </div>
-
-        {/* Checkout Bottom Sheet */}
-        <PaymentBottomSheet
-          isOpen={isCheckoutOpen}
-          onClose={() => setIsCheckoutOpen(false)}
-          price={displayEvent.price}
-          eventName={displayEvent.title}
-          eventVenue={displayEvent.venue}
-        />
       </div>
     </div>
   );

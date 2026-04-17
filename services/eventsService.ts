@@ -27,7 +27,6 @@ export async function fetchEvents(limit: number = 7): Promise<Event[]> {
     throw new Error('Invalid API response');
   }
 
-  // Map API response to Event interface and limit results
   const mappedEvents: Event[] = data.events_results.slice(0, limit).map((item: any, index: number) => ({
     id: `event_${index}`,
     title: item.title || 'Event Title',
@@ -42,6 +41,5 @@ export async function fetchEvents(limit: number = 7): Promise<Event[]> {
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return 'Date TBA';
-  // Parse date from format like "Mon, May 27" or "May 27 – Jun 1"
   return dateStr;
 }

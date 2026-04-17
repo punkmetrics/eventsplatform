@@ -5,7 +5,7 @@ import {defineConfig, loadEnv} from 'vite';
 
 // Vite plugin that registers Express-style API routes inside the Vite dev server,
 // so no separate process is needed.
-function apiPlugin() {
+function apiPlugin(secretKey: string) {
   return {
     name: 'api-plugin',
     configureServer(server: any) {
@@ -20,8 +20,6 @@ function apiPlugin() {
         req.on('data', (chunk: Buffer) => chunks.push(chunk));
         req.on('end', async () => {
           try {
-            // Read directly from process.env — always populated in the Vite Node process
-            const secretKey = process.env.STRIPE_SECRET_KEY;
             if (!secretKey) throw new Error('STRIPE_SECRET_KEY is not set in environment');
 
             const body = JSON.parse(Buffer.concat(chunks).toString());
@@ -52,12 +50,13 @@ function apiPlugin() {
 }
 
 export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+  const env = loadEnv(mode, path.resolve(__dirname), '');
+  const secretKey = env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY || '';
   return {
-    plugins: [react(), tailwindcss(), apiPlugin()],
+    plugins: [react(), tailwindcss(), apiPlugin(secretKey)],
     define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.STRIPE_PUBLISHABLE_KEY': JSON.stringify(env.STRIPE_PUBLISHABLE_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || process.env.GEMINI_API_KEY),
+      'process.env.STRIPE_PUBLISHABLE_KEY': JSON.stringify(env.STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY),
     },
     resolve: {
       alias: {

@@ -38,9 +38,11 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
   price,
 }) => {
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchClientSecret = useCallback(async () => {
     setError(null);
+    setIsLoading(true);
     try {
       const res = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -51,12 +53,18 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
           priceInCents: parsePriceToCents(price),
         }),
       });
-      if (!res.ok) throw new Error('Failed to create checkout session');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error ${res.status}`);
+      }
       const data = await res.json();
+      if (!data.clientSecret) throw new Error('No client secret returned');
       return data.clientSecret as string;
     } catch (err: any) {
       setError(err.message);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   }, [eventName, eventVenue, price]);
 
@@ -107,8 +115,8 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
         {/* Stripe Embedded Checkout — scrollable */}
         <div className="flex-1 overflow-y-auto">
           {error ? (
-            <div className="p-6 text-center">
-              <p className="text-destructive text-sm mb-4">{error}</p>
+            <div className="p-6 text-center space-y-4">
+              <p className="text-destructive text-sm">{error}</p>
               <Button variant="outline" onClick={onClose} className="rounded-full">Close</Button>
             </div>
           ) : (
@@ -116,7 +124,13 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
               stripe={stripePromise}
               options={{ fetchClientSecret }}
             >
-              <EmbeddedCheckout />
+              {isLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                </div>
+              ) : (
+                <EmbeddedCheckout />
+              )}
             </EmbeddedCheckoutProvider>
           )}
         </div>

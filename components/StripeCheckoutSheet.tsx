@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { X } from 'lucide-react';
@@ -11,8 +12,14 @@ function parsePriceToCents(price: string): number {
   if (!price) return 100;
   const cleaned = price.replace(/[^0-9.]/g, '');
   const num = parseFloat(cleaned);
-  if (isNaN(num) || num <= 0) return 100; // $1.00 placeholder
+  if (isNaN(num) || num <= 0) return 100;
   return Math.round(num * 100);
+}
+
+function formatDisplayPrice(price: string): string {
+  const cents = parsePriceToCents(price);
+  if (cents === 100 && !/\d/.test(price)) return '$1.00';
+  return price;
 }
 
 interface StripeCheckoutSheetProps {
@@ -44,7 +51,6 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
           priceInCents: parsePriceToCents(price),
         }),
       });
-
       if (!res.ok) throw new Error('Failed to create checkout session');
       const data = await res.json();
       return data.clientSecret as string;
@@ -56,64 +62,67 @@ const StripeCheckoutSheet: React.FC<StripeCheckoutSheetProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-    <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose} />
+  // Use a portal so the sheet is mounted at document.body, above all other z-index stacking contexts
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
 
-      {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50 max-h-[92vh] flex flex-col">
-        <div className="bg-background rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-            {/* Handle */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-3 w-10 h-1 bg-muted-foreground/30 rounded-full" />
+      {/* Full-height sheet */}
+      <div className="relative z-10 w-full max-w-md mx-auto h-[95vh] flex flex-col bg-background rounded-t-3xl shadow-[0_-10px_60px_rgba(0,0,0,0.6)] overflow-hidden">
 
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Checkout</p>
-              <h2 className="text-base font-bold text-foreground leading-tight line-clamp-1">{eventName}</h2>
-              <p className="text-xs text-muted-foreground line-clamp-1">{eventVenue}</p>
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-2 pb-4 shrink-0">
+          <div className="flex-1 min-w-0 pr-3">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-0.5">Checkout</p>
+            <h2 className="text-lg font-bold text-foreground leading-tight line-clamp-1">{eventName}</h2>
+            <p className="text-sm text-muted-foreground line-clamp-1">{eventVenue}</p>
+          </div>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="rounded-full shrink-0 mt-1"
+            onClick={onClose}
+            aria-label="Close checkout"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="border-t border-border mx-5 shrink-0" />
+
+        {/* Price summary */}
+        <div className="flex items-center justify-between px-5 py-4 shrink-0">
+          <span className="text-sm text-muted-foreground">Total</span>
+          <span className="text-xl font-bold text-foreground">{formatDisplayPrice(price)}</span>
+        </div>
+
+        <div className="border-t border-border mx-5 shrink-0" />
+
+        {/* Stripe Embedded Checkout — scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {error ? (
+            <div className="p-6 text-center">
+              <p className="text-destructive text-sm mb-4">{error}</p>
+              <Button variant="outline" onClick={onClose} className="rounded-full">Close</Button>
             </div>
-
-            <Button
-              variant="secondary"
-              size="icon"
-              className="rounded-full shrink-0"
-              onClick={onClose}
-              aria-label="Close checkout"
+          ) : (
+            <EmbeddedCheckoutProvider
+              stripe={stripePromise}
+              options={{ fetchClientSecret }}
             >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-
-          <div className="border-t border-border mx-5" />
-
-          {/* Price summary */}
-          <div className="flex items-center justify-between px-5 py-3 shrink-0">
-            <span className="text-sm text-muted-foreground">Total</span>
-            <span className="text-lg font-bold text-foreground">
-              {parsePriceToCents(price) === 100 && !/\d/.test(price) ? '$1.00' : price}
-            </span>
-          </div>
-
-          <div className="border-t border-border mx-5" />
-
-          {/* Stripe Embedded Checkout */}
-          <div className="overflow-y-auto flex-1 px-2 py-2">
-            {error ? (
-              <div className="p-6 text-center text-destructive text-sm">{error}</div>
-            ) : (
-              <EmbeddedCheckoutProvider
-                stripe={stripePromise}
-                options={{ fetchClientSecret }}
-              >
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
-            )}
-          </div>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          )}
         </div>
       </div>
-    </>
+    </div>,
+    document.body
   );
 };
 

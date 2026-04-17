@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, Search, MapPin, Menu, Music, Disc, Users, Laugh, Mic, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/SearchInput';
 import { FilterPill } from '@/components/FilterPill';
 import { CategoryCard } from '@/components/CategoryCard';
 import { cn } from '@/lib/utils';
+import { fetchEvents, type Event } from '@/services/eventsService';
 
 // --- Mock Data ---
 
@@ -184,6 +185,27 @@ export default function EventsPage() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [events, setEvents] = useState<Event[]>(EVENTS as Event[]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setIsLoading(true);
+        const apiEvents = await fetchEvents(7);
+        setEvents(apiEvents);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load events. Showing default events.');
+        setEvents(EVENTS as Event[]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

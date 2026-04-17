@@ -112,7 +112,7 @@ const EventDetailsPage: React.FC = () => {
         {/* Content - Scrollable Area */}
         <div className="flex-1 overflow-y-auto pb-32 px-4">
           {/* Featured Image with Badge and Action Buttons */}
-          <div className="relative w-full h-[304px] rounded-[24px] overflow-hidden bg-card mb-6">
+          <div className="relative w-full h-[280px] rounded-[24px] overflow-hidden bg-card mb-6">
             {/* Background Image */}
             <img
               src={displayEvent.image}

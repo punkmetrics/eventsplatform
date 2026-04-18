@@ -1,7 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { createRequire } from 'module';
 import {defineConfig, loadEnv} from 'vite';
+
+const require = createRequire(import.meta.url);
 
 // Vite plugin that registers Express-style API routes inside the Vite dev server,
 // so no separate process is needed.
@@ -26,7 +29,7 @@ function apiPlugin(secretKey: string) {
             const { eventName, eventVenue, priceInCents } = body;
             const amount = priceInCents && priceInCents > 0 ? priceInCents : 100;
 
-            const Stripe = (await import('stripe')).default;
+            const Stripe = require('stripe');
             const stripe = new Stripe(secretKey);
 
             const paymentIntent = await stripe.paymentIntents.create({

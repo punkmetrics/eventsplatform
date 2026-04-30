@@ -8,7 +8,7 @@ export interface Event {
 }
 
 export async function fetchEvents(limit: number = 7): Promise<Event[]> {
-  const API_KEY = 'exZLJHzrwTh6dXsXGQga9Vs8';
+  const API_KEY = 'your-key';
   const url = new URL('https://www.searchapi.io/api/v1/search');
   url.searchParams.append('engine', 'google_events');
   url.searchParams.append('q', 'Music Events');
